@@ -14,7 +14,7 @@ def search_geni(name, narkdy, zemkdy):
     response = requests.get(search_url, headers=headers)
     
     if response.status_code != 200:
-        return None
+        return None, None
     
     soup = BeautifulSoup(response.text, "html.parser")
     profiles = []
@@ -75,17 +75,19 @@ def main():
   BIND(STR(?label) AS ?personLabel)
 }
 ORDER BY ?person
-OFFSET 24900
+OFFSET 24964
 """
     entities = sparql ('https://query.wikidata.org/sparql', query)["results"]["bindings"]
     matches = {}
+    len_entities = len(entities)
     
-    for entity in entities:
+    for i, entity in enumerate(entities):
         qid = entity["person"]["value"].split("/")[-1]
-        print(qid)
+        print(f'{i}/{len_entities}: {qid}')
         name = entity["personLabel"]["value"]
         narkdy = entity["narkdy"]["value"][:10] if "narkdy" in entity and int(entity["prec569"]["value"]) > 8 else None
         zemkdy = entity["zemkdy"]["value"][:10] if "zemkdy" in entity and int(entity["prec570"]["value"]) > 8 else None
+        print(name, narkdy, zemkdy)
         if not narkdy:
             continue
         dob = narkdy[:4] if narkdy else None
