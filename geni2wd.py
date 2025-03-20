@@ -77,7 +77,7 @@ def main():
 ORDER BY ?person
 OFFSET 24964
 """
-    entities = sparql ('https://query.wikidata.org/sparql', query)["results"]["bindings"]
+    entities = sparql (endpoint_wd, query)["results"]["bindings"]
     matches = {}
     len_entities = len(entities)
     
