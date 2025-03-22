@@ -27,7 +27,7 @@ def fetch_people_born_on_date(date):
 def check_similarity(name1, name2):
     return SequenceMatcher(None, name1, name2).ratio() * 100
 
-year = 1810
+year = 1840
 start_date = datetime(year, 1, 1)
 end_date = datetime(year + 9, 12, 31)
 current_date = start_date

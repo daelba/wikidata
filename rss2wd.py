@@ -5,10 +5,12 @@ from urllib.parse import urljoin
 from endpoints import *
 
 query = '''SELECT ?item ?web WHERE {
-  ?item wdt:P856 ?web;
-        (wdt:P17|wdt:P495) wd:Q213.
+  ?item wdt:P31 wd:Q3918;
+        wdt:P856 ?web.
  MINUS { ?item wdt:P1019 [] }
-}'''
+}
+OFFSET 2700
+'''
 
 
 def find_rss_feed(url):
@@ -21,13 +23,19 @@ def find_rss_feed(url):
     soup = BeautifulSoup(response.content, 'html.parser')
 
     # Check for RSS feed link tags
-    feed_links = [urljoin(url, link['href']) for link in soup.find_all('link', type='application/rss+xml', href=True)]
+    feed_links = [urljoin(url, link['href']) for link in soup.find_all('link', type='application/rss+xml', href=True) if not "/comments/" in link["href"]]
     if feed_links:
         return feed_links
 
     # Check for common RSS feed paths
     common_paths = ["/rss", "/feed", "/rss.xml", "/feed.xml", "/atom.xml"]
-    feed_links = [urljoin(url, path) for path in common_paths if requests.head(urljoin(url, path)).status_code == 200]
+    feed_links = []
+    for path in common_paths:
+        try:
+            if requests.head(urljoin(url, path)).status_code == 200:
+                feed_links.append(urljoin(url, path))
+        except requests.exceptions.RequestException:
+            continue
 
     return feed_links if feed_links else None
 

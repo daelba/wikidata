@@ -75,7 +75,7 @@ def main():
   BIND(STR(?label) AS ?personLabel)
 }
 ORDER BY ?person
-OFFSET 24964
+OFFSET 41300
 """
     entities = sparql (endpoint_wd, query)["results"]["bindings"]
     matches = {}
