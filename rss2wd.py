@@ -5,11 +5,11 @@ from urllib.parse import urljoin
 from endpoints import *
 
 query = '''SELECT ?item ?web WHERE {
-  ?item wdt:P31 wd:Q3918;
+  ?item wdt:P31 wd:Q5;
         wdt:P856 ?web.
  MINUS { ?item wdt:P1019 [] }
 }
-OFFSET 2700
+OFFSET 0
 '''
 
 

@@ -5,6 +5,7 @@ from SPARQLWrapper import SPARQLWrapper, JSON
 ############### SPARQL funkce ###############
 
 endpoint_wd = 'https://query.wikidata.org/sparql'
+endpoint_wc = 'https://commons-query.wikimedia.org/sparql'
 
 def sparql(endpoint, query):
 	user_agent = "WDQS-example Python/%s.%s" % (sys.version_info[0], sys.version_info[1])
