@@ -9,7 +9,6 @@ query = '''SELECT ?item ?web WHERE {
         wdt:P856 ?web.
  MINUS { ?item wdt:P1019 [] }
 }
-OFFSET 0
 '''
 
 
@@ -41,7 +40,7 @@ def find_rss_feed(url):
 
 
 def main():
-    websites = sparql(endpoint_wd, query)["results"]["bindings"]
+    websites = get_bigData(endpoint_wd, query, offset=6000, max=100000)
     for result in websites:
         qid = result["item"]["value"].split("/")[-1]
         feeds = find_rss_feed(result["web"]["value"])

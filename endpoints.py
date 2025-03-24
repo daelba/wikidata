@@ -21,7 +21,7 @@ def sparql(endpoint, query):
 			time.sleep(5)
 			continue
 			
-def get_bigData (endpoint, query, offset=0, limit=10000):
+def get_bigData (endpoint, query, offset=0, limit=10000, max=None):
 	items = []
 
 	while True:
@@ -36,4 +36,7 @@ def get_bigData (endpoint, query, offset=0, limit=10000):
 			offset += 10000
 		else:
 			print('Dohledáno ' + str(len(items)) + ' výsledků')
+			return items
+
+		if max and offset > max:
 			return items

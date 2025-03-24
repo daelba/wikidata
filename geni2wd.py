@@ -75,9 +75,8 @@ def main():
   BIND(STR(?label) AS ?personLabel)
 }
 ORDER BY ?person
-OFFSET 49000
 """
-    entities = sparql (endpoint_wd, query)["results"]["bindings"]
+    entities = get_bigData(endpoint_wd, query, offset=53500)
     matches = {}
     len_entities = len(entities)
     
