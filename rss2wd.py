@@ -1,17 +1,18 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+import concurrent.futures
 
 from endpoints import *
 from rss_library import *
 
 query = '''SELECT ?item ?web WHERE {
   ?item wdt:P31 wd:Q5;
-        wdt:P856 ?web.
- MINUS { ?item wdt:P1019 [] }
+        p:P856 ?statement.
+  ?statement ps:P856 ?web.
+  MINUS { ?statement pq:P1019 []}
 }
 '''
-
 
 def find_rss_feed(url):
     try:
@@ -41,18 +42,24 @@ def find_rss_feed(url):
 
 
 def main():
-    websites = get_bigData(endpoint_wd, query, offset=6000, max=100000)
-    for result in websites:
-        qid = result["item"]["value"].split("/")[-1]
-        feeds = find_rss_feed(result["web"]["value"])
-        if feeds:
-            if len(feeds) == 1:
-                if validate_rss(feeds[0]) in ["RSS", "JSON"]:
-                    with open (f"rss.txt", "a") as file:
-    #                    file.write(f'{qid}|P1019|"{feeds[0]}"' + "\n")
-                        file.write(f'{qid}|P856|"{result["web"]["value"]}"|P1019|"{feeds[0]}"' + "\n")
-            else:
-                print(f"Item: {qid}, Website: {result["web"]["value"]}, RSS Feeds: {feeds}")
-
+    websites = get_bigData(endpoint_wd, query, offset=100000, max=200000)
+    total = len(websites)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+        future_to_result = {executor.submit(find_rss_feed, result["web"]["value"]): result for result in websites}
+        for i, future in enumerate(concurrent.futures.as_completed(future_to_result), start=1):
+            result = future_to_result[future]
+            qid = result["item"]["value"].split("/")[-1]
+            print(f"{i}/{total}", end="\r")
+            try:
+                feeds = future.result()
+                if feeds and len(feeds) == 1 and check_response < 400 and validate_rss(feeds[0]) in ["RSS", "JSON"]:
+                    with open("rss.txt", "a") as file:
+                        file.write(f'{qid}|P856|"{result["web"]["value"]}"|P1019|"{feeds[0]}"\n')
+                #else:
+                #    print(f"Item: {qid}, Website: {result["web"]["value"]}, RSS Feeds: {feeds}")
+            except Exception as e:
+                pass
+                #print(f"Error fetching RSS for {result['web']['value']}: {e}")
+    
 if __name__ == "__main__":
     main()
