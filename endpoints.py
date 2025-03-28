@@ -33,7 +33,7 @@ def get_bigData (endpoint, query, offset=0, limit=10000, max=None):
 		result = sparql(endpoint,query_offset)["results"]["bindings"]
 		if len(result) != 0:
 			items.extend(result)
-			offset += 10000
+			offset += limit
 		else:
 			print('Dohledáno ' + str(len(items)) + ' výsledků')
 			return items

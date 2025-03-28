@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
 from endpoints import *
+from rss_library import *
 
 query = '''SELECT ?item ?web WHERE {
   ?item wdt:P31 wd:Q5;
@@ -46,8 +47,10 @@ def main():
         feeds = find_rss_feed(result["web"]["value"])
         if feeds:
             if len(feeds) == 1:
-                with open (f"rss.txt", "a") as file:
-                    file.write(f'{qid}|P1019|"{feeds[0]}"' + "\n")
+                if validate_rss(feeds[0]) in ["RSS", "JSON"]:
+                    with open (f"rss.txt", "a") as file:
+    #                    file.write(f'{qid}|P1019|"{feeds[0]}"' + "\n")
+                        file.write(f'{qid}|P856|"{result["web"]["value"]}"|P1019|"{feeds[0]}"' + "\n")
             else:
                 print(f"Item: {qid}, Website: {result["web"]["value"]}, RSS Feeds: {feeds}")
 
