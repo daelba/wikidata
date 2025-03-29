@@ -76,7 +76,7 @@ def main():
 }
 ORDER BY ?person
 """
-    entities = get_bigData(endpoint_wd, query, offset=66600, limit=30000)
+    entities = get_bigData(endpoint_wd, query, offset=70000, limit=20000)
     matches = {}
     len_entities = len(entities)
     

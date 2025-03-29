@@ -42,7 +42,7 @@ def find_rss_feed(url):
 
 
 def main():
-    websites = get_bigData(endpoint_wd, query, offset=100000, max=200000)
+    websites = get_bigData(endpoint_wd, query, offset=220000, limit=10000, max=300000)
     total = len(websites)
     with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
         future_to_result = {executor.submit(find_rss_feed, result["web"]["value"]): result for result in websites}
