@@ -2,6 +2,7 @@ import requests
 from datetime import datetime, timedelta
 from difflib import SequenceMatcher
 from endpoints import *
+import time
 
 def get_sparql_query(date):
     return f"""
@@ -32,7 +33,7 @@ def get_q_values(qid, prop):
     query = f"SELECT ?value WHERE {{ wd:{qid} p:{prop} ?stat. ?stat ps:{prop} ?value. MINUS {{ ?stat wikibase:rank wikibase:DeprecatedRank }} }}"
     return sparql(endpoint_wd, query)["results"]["bindings"]
 
-year = 1890
+year = 1930
 start_date = datetime(year, 1, 1)
 end_date = datetime(year + 9, 12, 31)
 current_date = start_date
@@ -53,3 +54,4 @@ while current_date <= end_date:
                     print(f"Date: {date_str}, Item IDs: [{people[i]['person']['value']} (died {died1[0]['value']['value'].split('T')[0] if died1 else '?'}), {people[j]['person']['value']} (died {died2[0]['value']['value'].split('T')[0] if died2 else '?'})], Similarity: {similarity}%")
     
     current_date += timedelta(days=1)
+    time.sleep(2)
