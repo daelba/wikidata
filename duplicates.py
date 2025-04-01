@@ -2,6 +2,7 @@ import requests
 from datetime import datetime, timedelta
 from difflib import SequenceMatcher
 from endpoints import *
+import time
 
 def get_sparql_query(date):
     return f"""
@@ -70,3 +71,4 @@ while current_date <= end_date:
                     print(f"Date: {date_str}, Item IDs: [{people[i]['person']['value']} (died {died1 if died1 else '?'}), {people[j]['person']['value']} (died {died2 if died2 else '?'})], Similarity: {similarity}%")
     
     current_date += timedelta(days=1)
+    time.sleep(2)
