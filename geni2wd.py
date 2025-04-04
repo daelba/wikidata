@@ -64,19 +64,24 @@ def check_geni_profile(profile, narkdy):
     
 # Main function
 def main():
-    query = """SELECT DISTINCT ?person ?personLabel ?narkdy ?zemkdy ?prec569 ?prec570 WHERE {
-  ?person wdt:P9300 [].
-  MINUS {?person wdt:P2600 [] }
+    property = sys.argv[1] if len(sys.argv) > 1 else None
+    if property is None:
+        print("Error: first argument must be a property ID", file=sys.stderr)
+        sys.exit(1)
+
+    query = f"""SELECT DISTINCT ?person ?personLabel ?narkdy ?zemkdy ?prec569 ?prec570 WHERE {{
+  ?person wdt:{property} [].
+  MINUS {{ ?person wdt:P2600 [] }}
   ?person rdfs:label ?label;
           p:P569/psv:P569 ?p569.
   ?p569 wikibase:timeValue ?narkdy;
         wikibase:timePrecision ?prec569.
-  OPTIONAL { ?person p:P570/psv:P570 ?p570. ?p570 wikibase:timeValue ?zemkdy; wikibase:timePrecision ?prec570 }
+  OPTIONAL {{ ?person p:P570/psv:P570 ?p570. ?p570 wikibase:timeValue ?zemkdy; wikibase:timePrecision ?prec570 }}
   BIND(STR(?label) AS ?personLabel)
-}
+}}
 ORDER BY ?person
 """
-    entities = get_bigData(endpoint_wd, query, offset=70000, limit=20000)
+    entities = get_bigData(endpoint_wd, query, offset=0, limit=20000)
     matches = {}
     len_entities = len(entities)
     
