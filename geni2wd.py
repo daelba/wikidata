@@ -69,52 +69,60 @@ def main():
         print("Error: first argument must be a property ID", file=sys.stderr)
         sys.exit(1)
 
-    query = f"""SELECT DISTINCT ?person ?personLabel ?narkdy ?zemkdy ?prec569 ?prec570 WHERE {{
+    query = f"""SELECT DISTINCT ?person WHERE {{
   ?person wdt:{property} [].
   MINUS {{ ?person wdt:P2600 [] }}
-  ?person rdfs:label ?label;
-          p:P569/psv:P569 ?p569.
-  ?p569 wikibase:timeValue ?narkdy;
-        wikibase:timePrecision ?prec569.
-  OPTIONAL {{ ?person p:P570/psv:P570 ?p570. ?p570 wikibase:timeValue ?zemkdy; wikibase:timePrecision ?prec570 }}
-  BIND(STR(?label) AS ?personLabel)
 }}
 ORDER BY ?person
 """
-    entities = get_bigData(endpoint_wd, query, offset=0, limit=20000)
+    entities = get_bigData(endpoint_wd, query, offset=0, limit=100000)
     matches = {}
     len_entities = len(entities)
     
     for i, entity in enumerate(entities):
         qid = entity["person"]["value"].split("/")[-1]
         print(f'{i}/{len_entities}: {qid}')
-        name = entity["personLabel"]["value"]
-        narkdy = entity["narkdy"]["value"][:10] if "narkdy" in entity and int(entity["prec569"]["value"]) > 8 else None
-        zemkdy = entity["zemkdy"]["value"][:10] if "zemkdy" in entity and int(entity["prec570"]["value"]) > 8 else None
-        print(name, narkdy, zemkdy)
-        if not narkdy:
-            continue
-        dob = narkdy[:4] if narkdy else None
-        #dod = zemkdy[:4] if zemkdy else None
-        #print(f"Searching for: {name} ({dob})")
-        geni_profiles, profile_status = search_geni(name, narkdy, zemkdy)
-        
-        if geni_profiles:
-            matches[qid] = {
-                "wikidata_name": name,
-                "dob": dob,
-                "geni_matches": geni_profiles
-            }
-        
-            if len(geni_profiles) == 1:
-                with open (f"geni_{profile_status}.txt", "a") as file:
-                    file.write(f'{qid}|P2600|"{geni_profiles[0]}"' + "\n")
-        time.sleep(15)  # Avoid being blocked
+
+        personQuery = f"""SELECT DISTINCT ?personLabel ?narkdy ?zemkdy ?prec569 ?prec570 WHERE {{
+  wd:{qid} rdfs:label ?label;
+    p:P569/psv:P569 [
+      wikibase:timeValue ?narkdy;
+      wikibase:timePrecision ?prec569
+    ].
+  OPTIONAL {{ wd:{qid} p:P570/psv:P570 [ wikibase:timeValue ?zemkdy; wikibase:timePrecision ?prec570 ] }}
+  BIND(STR(?label) AS ?personLabel)
+}}
+"""
+        personResult = sparql (endpoint_wd, personQuery)["results"]["bindings"]
+        for result in personResult:
+            name = result["personLabel"]["value"]
+            narkdy = result["narkdy"]["value"][:10] if "narkdy" in result and int(result["prec569"]["value"]) > 8 else None
+            zemkdy = result["zemkdy"]["value"][:10] if "zemkdy" in result and int(result["prec570"]["value"]) > 8 else None
+            print(name, narkdy, zemkdy)
+            if not narkdy:
+                continue
+            dob = narkdy[:4] if narkdy else None
+            #dod = zemkdy[:4] if zemkdy else None
+            #print(f"Searching for: {name} ({dob})")
+            geni_profiles, profile_status = search_geni(name, narkdy, zemkdy)
+            time.sleep(15)  # Avoid being blocked
+            
+            if geni_profiles:
+                #matches[qid] = {
+                #    "wikidata_name": name,
+                #    "dob": dob,
+                #    "geni_matches": geni_profiles
+                #}
+            
+                if len(geni_profiles) == 1:
+                    with open (f"geni_{profile_status}.txt", "a") as file:
+                        file.write(f'{qid}|P2600|"{geni_profiles[0]}"' + "\n")
+                    break
     
-    for qid, data in matches.items():
-        print(f"\nWikidata {qid}: {data['wikidata_name']} ({data['dob']})")
-        for profile in data["geni_matches"]:
-            print(f"  - https://www.geni.com/profile/index/{profile}")
+    #for qid, data in matches.items():
+    #    print(f"\nWikidata {qid}: {data['wikidata_name']} ({data['dob']})")
+    #    for profile in data["geni_matches"]:
+    #        print(f"  - https://www.geni.com/profile/index/{profile}")
 
 if __name__ == "__main__":
     main()
