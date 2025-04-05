@@ -3,9 +3,11 @@ from bs4 import BeautifulSoup
 import time
 
 from endpoints import *
+from geni_library import *
 
 # Search for a person on Geni.com
 def search_geni(name, narkdy, zemkdy):
+    time.sleep(1)
     dob = narkdy[:4] if narkdy else None
     dod = zemkdy[:4] if zemkdy and zemkdy[:4].isdigit() else None
     search_url = f"https://www.geni.com/search?search_advanced=open&names={name.replace(' ', '+')}&birth[year_range]=exact&birth[year]={dob[:4]}"    
@@ -45,20 +47,15 @@ def search_geni(name, narkdy, zemkdy):
     return profiles, "unchecked" if profiles else None
 
 # Check profile
-def check_geni_profile(profile, narkdy):
-    url = f"https://www.geni.com/profile/index/{profile}"
-    headers = {"User-Agent": "Mozilla/5.0"}
-    response = requests.get(url, headers=headers)
-
-    if response.status_code != 200:
-        return None
-    
-    soup = BeautifulSoup(response.text, "html.parser")
-    geni_narkdy = soup.select("time[itemprop='birthDate']")
-    if geni_narkdy:
-        value = geni_narkdy[0].get("content")
-        #print(narkdy, value)
-        if value == narkdy:
+def check_geni_profile(profile, input_birthdate):
+    data = geni_api(profile)
+    if "birth" in data and "year" in data["birth"]:
+        geni_birthdate = f"{data['birth']['year']}"
+        if "month" in data["birth"]:
+            geni_birthdate += f"-{data['birth']['month']:02d}"
+            if "day" in data["birth"]:
+                geni_birthdate += f"-{data['birth']['day']:02d}"
+        if input_birthdate == geni_birthdate:
             return profile
     return None
     
@@ -105,7 +102,6 @@ ORDER BY ?person
             #dod = zemkdy[:4] if zemkdy else None
             #print(f"Searching for: {name} ({dob})")
             geni_profiles, profile_status = search_geni(name, narkdy, zemkdy)
-            time.sleep(15)  # Avoid being blocked
             
             if geni_profiles:
                 #matches[qid] = {
