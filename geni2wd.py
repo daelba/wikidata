@@ -41,7 +41,7 @@ def search_geni(name, narkdy, zemkdy):
             ):
             checked_narkdy_profile = check_geni_profile(profile_link, narkdy)
             if checked_narkdy_profile:
-                print(profile)
+                print(profile_link)
                 return [checked_narkdy_profile], "checked"
             profiles.append(profile_link)
             
