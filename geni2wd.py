@@ -41,6 +41,7 @@ def search_geni(name, narkdy, zemkdy):
             ):
             checked_narkdy_profile = check_geni_profile(profile_link, narkdy)
             if checked_narkdy_profile:
+                print(profile)
                 return [checked_narkdy_profile], "checked"
             profiles.append(profile_link)
             
@@ -49,14 +50,16 @@ def search_geni(name, narkdy, zemkdy):
 # Check profile
 def check_geni_profile(profile, input_birthdate):
     data = geni_api(profile)
-    if "birth" in data and "year" in data["birth"]:
-        geni_birthdate = f"{data['birth']['year']}"
-        if "month" in data["birth"]:
-            geni_birthdate += f"-{data['birth']['month']:02d}"
-            if "day" in data["birth"]:
-                geni_birthdate += f"-{data['birth']['day']:02d}"
-        if input_birthdate == geni_birthdate:
-            return profile
+    if "birth" in data and "date" in data["birth"]:
+        bd = data["birth"]["date"]
+        if "year" in bd:
+            geni_birthdate = f"{bd['year']}"
+            if "month" in bd:
+                geni_birthdate += f"-{bd['month']:02d}"
+                if "day" in bd:
+                    geni_birthdate += f"-{bd['day']:02d}"
+            if input_birthdate == geni_birthdate:
+                return profile
     return None
     
 # Main function
