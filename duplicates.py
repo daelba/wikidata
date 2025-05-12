@@ -43,7 +43,8 @@ def get_q_date(qid, prop):
 """
     return [ val["value"]["value"].split("T")[0] for val in sparql(endpoint_wd, query)["results"]["bindings"] ]
 
-year = 1920
+#year = 1924
+year = 1940
 start_date = datetime(year, 1, 1)
 end_date = datetime(year + 9, 12, 31)
 current_date = start_date
